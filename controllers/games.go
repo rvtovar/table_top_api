@@ -51,14 +51,21 @@ func CreateGames(c *gin.Context) {
 		return
 	}
 
+	uid := c.GetInt64("uid")
+
 	// create game
 	game := models.Game{
 		Name:     input.Name,
 		Style:    input.Style,
 		Location: input.Location,
 		DateTime: input.DateTime,
+		UserId:   uid,
 	}
-	models.DB.Create(&game)
+
+	if err := models.DB.Create(&game).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"data": game})
 }
@@ -67,6 +74,12 @@ func UpdateGame(c *gin.Context) {
 	game, err := gameReturn(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
+
+	uid := c.GetInt64("uid")
+	if uid != game.UserId {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authorized"})
 		return
 	}
 
@@ -84,6 +97,11 @@ func DeleteGame(c *gin.Context) {
 	game, err := gameReturn(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
+	uid := c.GetInt64("uid")
+	if uid != game.UserId {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Not authorized"})
 		return
 	}
 	models.DB.Delete(&game)

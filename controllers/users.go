@@ -32,7 +32,10 @@ func CreateUser(c *gin.Context) {
 		Password: hashedPassword,
 	}
 
-	models.DB.Create(&user)
+	if err := models.DB.Create(&user).Error; err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(200, gin.H{"data": "User created"})
 }

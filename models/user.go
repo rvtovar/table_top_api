@@ -8,10 +8,16 @@ import (
 
 type User struct {
 	ID        int64     `gorm:"primaryKey;autoIncrement" json:"id"`
-	Username  string    `gorm:"type:varchar(100);unqiueIndex;not null" json:"username"`
+	Username  string    `gorm:"type:varchar(100);uniqueIndex;not null" json:"username"`
 	Email     string    `gorm:"type:varchar(100);uniqueIndex;not null" json:"email"`
 	Password  string    `gorm:"type:varchar(100);not null" json:"password"`
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+}
+
+type UserInfo struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
 }
 
 func (u *User) ValidateCreds() error {
@@ -25,6 +31,8 @@ func (u *User) ValidateCreds() error {
 	if !pwdIsValid {
 		return errors.New("Credentials are Invalid")
 	}
-
+	u.Email = user.Email
+	u.ID = user.ID
+	u.Username = user.Username
 	return nil
 }
